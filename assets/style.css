@@ -1,0 +1,170 @@
+body {
+    font-family: 'Titillium Web';
+    background: linear-gradient(#6C648B 0%,#B6A19E 50%,#B6A19E 80%,#6C648B 100%);
+}
+h1 {
+    margin: 1%;
+    color: #6C648B;
+    text-align: right;
+    display:inline;
+}
+
+h2, h3, h4, h5, h6 {
+    color: white;
+    text-align: left;
+    display: inline;
+}
+
+.main-div{
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  max-height: 100%;
+  overflow: scroll;
+}
+
+.body-div{
+  display: flex;
+  flex-direction: column;
+  flex-wrap: wrap;
+  align-items: stretch;
+}
+
+.header-div{
+  width:100%;
+  min-height: 15%;
+  display: flex;
+  flex-direction: row;
+  flex-wrap: wrap;
+  background-color: #6BBAA7;
+  opacity: 90%;
+  border-style: none none none solid;
+  justify-content:space-between;
+  position:relative;
+  z-index:1;
+}
+
+.info-div {
+
+  flex: 1;
+  display: flex;
+  flex-direction: row;
+  flex-wrap: wrap;
+  align-items: stretch;
+}
+
+.station-info-div{
+  flex: 1;
+  flex-shrink: 1;
+  display: flex;
+  flex-direction: column;
+  max-width: 20%;
+  padding:1%;
+}
+
+.hist-div {
+  flex: 1;
+  flex-shrink: 1;
+  flex-direction: row;
+}
+
+.graph-div {
+  flex: 1;
+  flex-shrink: 1;
+  flex-direction: row;
+  flex-wrap: wrap;
+  background-color: #0A1612;
+  padding:1%;
+  margin-top:1%;
+  border-radius: 10px;
+  opacity: 80%;
+}
+
+.side-info-div {
+  max-width: 20%;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  flex-wrap: wrap;
+  margin-right:1%;
+}
+
+.date-time-div{
+  max-height: 10%;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  font-size: 20px;
+  border-radius: 10px;
+  margin-top:10%;
+  margin-left:2%;
+  align-items: center;
+  opacity: 90%;
+}
+
+.weather-div{
+  max-height: 40%;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  font-size: 20px;
+  border-radius: 10px;
+  margin-top:5%;
+  margin-left:2%;
+  background-color: #B6A19E;
+  opacity: 50%;
+  align-items: center;
+}
+
+.weather-info-div{
+  flex: 1;
+  display: flex;
+  flex-direction: row;
+  flex-wrap: wrap;
+  margin:10%;
+  justify-content: space-around;
+}
+
+
+.div-value-block{
+  padding:5px;
+}
+
+.weather-div-value-block{
+  margin:2%;
+}
+
+.div-user-control {
+   width:35%;
+   display: flex;
+   flex-direction: row;
+   flex-wrap: wrap;
+   margin-bottom: 1%;
+   align-items: center;
+   position: absolute;
+   right: 2%;
+   bottom: 0px;
+   justify-content:flex-end;
+ }
+
+
+.current-station-div {
+   min-width: 200px;
+   display: flex;
+   flex-direction: column;
+   flex-wrap: wrap;
+   color: #e5e5e5;
+   margin:2% 2% 10% 2%;
+   opacity: 90%;
+ }
+
+.search-result-div {
+  display: flex;
+  flex-direction: row;
+  flex-wrap: wrap;
+  background-color: #FBA100;
+  padding: 2%;
+  margin-top: 5%;
+  justify-content:space-between;
+  border-radius: 5px;
+}
