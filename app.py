@@ -34,7 +34,6 @@ mapbox_access_token = "pk.eyJ1IjoibW9ycGhldXMyNyIsImEiOiJja2Zrd3J0dWMwb2pxMnlwY3
 bk = backend()
 all_station_list = bk.get_all_station_list()
 server = app.server
-us = pytz.timezone('Asia/Taipei')
 
 def getStationHoverInfo(stationlist):
     station_hover_info = []
@@ -247,8 +246,7 @@ app.layout = html.Div(
 )
 def update_clock(intervals):
     dt_style = {'color':'white', 'size':'30px'}
-    dt = datetime.now()
-    dt = us.localize(dt)
+    dt = datetime.now().astimezone(pytz.timezone('Asia/Taiwan'))
     return html.Span(dt.strftime("%H:%M:%S"),style=dt_style), html.Span(datetime.today().strftime('%B-%d-%Y %A'),style=dt_style)
 
 

@@ -8,7 +8,7 @@ import pytz
 if True:
     p = ubike_db()
     p.connect2db()
-    us = pytz.timezone('Asia/Taipei')
+
     if True:
         try:
             r = requests.get('https://tcgbusfs.blob.core.windows.net/blobyoubike/YouBikeTP.json')
@@ -20,7 +20,7 @@ if True:
                     sdata['sno'] = int(udata[idx]['sno'])
                     sdata['sbi'] = int(udata[idx]['sbi'])
 
-                    dt = datetime.datetime.strptime(udata[idx]['mday'], "%Y%m%d%H%M%S")
+                    dt = datetime.datetime.strptime(udata[idx]['mday'], "%Y%m%d%H%M%S").astimezone(pytz.timezone('Asia/Taiwan'))
                     dt = us.localize(dt)
                     sdata['time'] = int(time.mktime(dt.timetuple()))
                     p.insert_ubike_data(sdata)
