@@ -4,9 +4,10 @@ import datetime, time
 import os, sys
 import backend
 from db_conn import weather_db
-
+import pytz
 
 if True:
+    us = pytz.timezone('Asia/Taipei')
     p = weather_db()
     p.connect2db()
     bk = backend.backend()
@@ -34,6 +35,7 @@ if True:
                         d.pop('weatherElement')
                         d['time'] = d['time']['obsTime']
                         dt = datetime.datetime.strptime(d['time'], "%Y-%m-%d %H:%M:%S")
+                        dt = us.localize(dt)
                         d['time'] = int(time.mktime(dt.timetuple()))
                         p.insert_weather0_data(d)
                 except Exception as e:
@@ -54,6 +56,7 @@ if True:
                         d.pop('weatherElement')
                         d['time'] = d['time']['obsTime']
                         dt = datetime.datetime.strptime(d['time'], "%Y-%m-%d %H:%M:%S")
+                        dt = us.localize(dt)
                         d['time'] = int(time.mktime(dt.timetuple()))
                         p.insert_weather1_data(d)
                 except Exception as e:

@@ -3,12 +3,12 @@ import json
 import datetime, time
 import os, sys
 from db_conn import ubike_db
-
+import pytz
 
 if True:
     p = ubike_db()
     p.connect2db()
-
+    us = pytz.timezone('Asia/Taipei')
     if True:
         try:
             r = requests.get('https://tcgbusfs.blob.core.windows.net/blobyoubike/YouBikeTP.json')
@@ -19,7 +19,9 @@ if True:
                     sdata = {}
                     sdata['sno'] = int(udata[idx]['sno'])
                     sdata['sbi'] = int(udata[idx]['sbi'])
+
                     dt = datetime.datetime.strptime(udata[idx]['mday'], "%Y%m%d%H%M%S")
+                    dt = us.localize(dt)
                     sdata['time'] = int(time.mktime(dt.timetuple()))
                     p.insert_ubike_data(sdata)
                 except Exception as e:
