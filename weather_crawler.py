@@ -34,7 +34,7 @@ if True:
                             d.update(kv)
                         d.pop('weatherElement')
                         d['time'] = d['time']['obsTime']
-                        dt = datetime.datetime.strptime(d['time'], "%Y-%m-%d %H:%M:%S").astimezone(pytz.timezone('Asia/Taiwan'))
+                        dt = datetime.datetime.strptime(d['time'], "%Y-%m-%d %H:%M:%S").astimezone(pytz.timezone('Asia/Taipei'))
                         d['time'] = int(time.mktime(dt.timetuple()))
                         p.insert_weather0_data(d)
                 except Exception as e:
@@ -54,7 +54,7 @@ if True:
                             d.update(kv)
                         d.pop('weatherElement')
                         d['time'] = d['time']['obsTime']
-                        dt = datetime.datetime.strptime(d['time'], "%Y-%m-%d %H:%M:%S").astimezone(pytz.timezone('Asia/Taiwan'))
+                        dt = datetime.datetime.strptime(d['time'], "%Y-%m-%d %H:%M:%S").astimezone(pytz.timezone('Asia/Taipei'))
                         d['time'] = int(time.mktime(dt.timetuple()))
                         p.insert_weather1_data(d)
                 except Exception as e:

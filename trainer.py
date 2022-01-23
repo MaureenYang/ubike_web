@@ -139,7 +139,7 @@ def trainer_cno():
             station1 = ws['1'].values[0] #HUMD
 
             # read data from database:
-            ts = datetime.datetime.now().astimezone(pytz.timezone('Asia/Taiwan'))
+            ts = datetime.datetime.now().astimezone(pytz.timezone('Asia/Taipei'))
             ts = ts.replace(hour=0, second=0, minute=0)
             ts = int(ts.timestamp())
             wdata0 = w.get_historical_data(station0, ts)

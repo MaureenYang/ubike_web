@@ -20,7 +20,7 @@ if True:
                     sdata['sno'] = int(udata[idx]['sno'])
                     sdata['sbi'] = int(udata[idx]['sbi'])
 
-                    dt = datetime.datetime.strptime(udata[idx]['mday'], "%Y%m%d%H%M%S").astimezone(pytz.timezone('Asia/Taiwan'))
+                    dt = datetime.datetime.strptime(udata[idx]['mday'], "%Y%m%d%H%M%S").astimezone(pytz.timezone('Asia/Taipei'))
                     dt = us.localize(dt)
                     sdata['time'] = int(time.mktime(dt.timetuple()))
                     p.insert_ubike_data(sdata)
