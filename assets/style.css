@@ -19,8 +19,6 @@ h2, h3, h4, h5, h6 {
   display: flex;
   flex-direction: column;
   align-items: stretch;
-  max-height: 100%;
-  overflow: scroll;
 }
 
 .body-div{

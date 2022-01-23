@@ -16,7 +16,7 @@ import datetime as dt
 import json
 import time
 import os, sys
-import backend as bk
+from backend import backend
 
 external_stylesheets = [
     'https://codepen.io/chriddyp/pen/bWLwgP.css',
@@ -26,11 +26,13 @@ external_stylesheets = [
         'type': 'text/css',
     }
 ]
+bk = None
 
 app = dash.Dash(__name__,
     meta_tags=[{"name": "viewport", "content": "width=device-width"}],
     external_stylesheets=external_stylesheets)
 mapbox_access_token = "pk.eyJ1IjoibW9ycGhldXMyNyIsImEiOiJja2Zrd3J0dWMwb2pxMnlwY3g0Zmtza3ZuIn0.obFXuRnZeFgcHdzxq-Co4g"
+bk = backend()
 all_station_list = bk.get_all_station_list()
 
 
@@ -79,9 +81,9 @@ hist_div = html.Div(
         dcc.Slider(
             id='hour-slider',
             min=-24,
-            max=0,
+            max=1,
             step=1,
-            value=0,
+            value=1,
             updatemode='drag',
             tooltip={"placement": "bottom", "always_visible": False},
         ),
@@ -119,6 +121,12 @@ search_result = html.Div(
     children=[
         value_block('Bike','--','pred_bike_value',"40%"),
         value_block('Empty ','--', 'pred_empty_value',"40%"),
+        dcc.Store(id='intermediate-value'),
+        dcc.Store(id='intermediate-value_hr'),
+        dcc.ConfirmDialog(
+        id='confirm-danger',
+        message='prediction for this station is not support now!',
+    ),
     ]
 )
 
@@ -191,7 +199,7 @@ station_info_div = html.Div(
     className = "station-info-div",
     children=[
         current_status_div,
-        html.H3("Prediction",id='next-hour'),
+        html.H3("Prediction for Next Hour",id='next-hour'),
         search_result
     ]
 )
@@ -199,7 +207,7 @@ station_info_div = html.Div(
 header_div = html.Div(
     className = "header-div",
     children=[
-        html.H1("Taipei Youbike Prediction",style={'text-align':'center'}),
+        html.H1("Forecasting System for Taipei Youbike",style={'text-align':'center'}),
         user_control_div,
     ]
 )
@@ -293,21 +301,34 @@ def get_selection(month, day, selection):
     [
         Input("location-dropdown", "value"),
         Input('hour-slider', 'value'),
+        Input('intermediate-value', 'data'),
+        Input('intermediate-value_hr', 'data')
     ],
 )
-def update_histogram(selectedLocation,hr_slider):
+def update_histogram(selectedLocation,hr_slider, pred_sbi, cur_hr):
 
     idx = np.array([ 0,  1,  2,  3,  4,  5,  6,  7,  8,  9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23])
     if selectedLocation != None:
-        h_df = bk.get_12h_historical_data(int(selectedLocation), datetime.now(),hr_slider)
-        xVal = np.array(h_df.index.hour)
-        yVal = np.array(list(h_df))
+        if isinstance(pred_sbi, int) == False and hr_slider == 1:
+            h_df = bk.get_12h_historical_data(int(selectedLocation), datetime.now(),hr_slider-1)
+        else:
+            h_df = bk.get_12h_historical_data(int(selectedLocation), datetime.now(),hr_slider)
+        print(h_df)
+        if isinstance(h_df, pd.Series) == False:
+            xVal = np.array([ 0,  1,  2,  3,  4,  5,  6,  7,  8,  9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23])
+            yVal = np.zeros(24)
+        else:
+            if hr_slider == 1 and isinstance(pred_sbi, int):
+                ns = pd.Series([pred_sbi], index=[h_df.index[-1] + pd.DateOffset(hours=1)])
+                h_df = h_df.append(ns)
+            xVal = np.array(h_df.index.hour)
+            yVal = np.array(list(h_df))
     else:
         xVal = np.array([ 0,  1,  2,  3,  4,  5,  6,  7,  8,  9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23])
-        yVal = np.array([ 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0, 0, 0, 0,0,0, 0 ,0])
+        yVal = np.zeros(24)
 
     if len(yVal) == 0:
-        yVal = np.array([ 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0, 0, 0, 0,0,0, 0 ,0])
+        yVal = np.zeros(24)
 
     colorVal = [
         "#F4EC15",
@@ -335,6 +356,10 @@ def update_histogram(selectedLocation,hr_slider):
         "#4E2F9C",
         "#603099",
     ]
+    #print("->>>>>>",hr_slider, isinstance(pred_sbi, int))
+    if hr_slider == 1 and isinstance(pred_sbi, int):
+        colorVal[23] = '#E06CC1'
+
 
     layout = go.Layout(
         bargap=0.01,
@@ -441,6 +466,9 @@ def update_current_station(click_data):
     Output("wind_speed_value", "children"),
     Output("weather-img-div", "children"),
     Output("temp-value", "children"),
+    Output('intermediate-value', 'data'),
+    Output('intermediate-value_hr', 'data'),
+    Output('confirm-danger', 'displayed'),
     Output("map-graph", "figure"),
     [
         Input("location-dropdown", "value"),
@@ -453,12 +481,14 @@ def update_graph(selectedLocation, map_graph):
     latInitial = 25.0408578889
     lonInitial = 121.567904444
     bearing = 0
+    warning_display = False
 
     total_num = '--'
     bike_num = '--'
     empty_num = '--'
     pred_bemp = '--'
     pred_sbi = '--'
+    cur_hr = '--'
 
     w_uvi = '--'
     w_humd = '--'
@@ -469,7 +499,6 @@ def update_graph(selectedLocation, map_graph):
     w_temp = '-- °C'
 
     img_div = html.Img(src=app.get_asset_url('weather_icon/sun.jpg'),width="100", height="100",style={"margin":"5%", "border-radius": "50%"}),
-
 
     station_no = "No. "
     station_name = "Station Name"
@@ -493,16 +522,25 @@ def update_graph(selectedLocation, map_graph):
         lonInitial = float(station_info['lng'])
         total_num = int(station_info['tot'])
         bike_num = int(station_info['sbi'])
-        empty_num = int(station_info['bemp'])
+        empty_num = int(station_info['tot']) - int(station_info['sbi'])#int(station_info['bemp'])
         station_no = station_no + station_info['sno']
         station_name = station_info['sna']
         station_addr =  station_info['ar']
-
-        pred_sbi = bk.predict_sbi(int(selectedLocation),datetime.now())
+        try:
+            cur_time = datetime.now()
+            cur_hr = cur_time.hour
+            pred_sbi = bk.predict_sbi(int(selectedLocation),cur_time)
+        except Exception as e:
+            print(e)
+            pred_sbi = None
+            warning_display = True
+            cur_hr = None
 
         if pred_sbi == None:
             pred_sbi = '--'
             pred_bemp = '--'
+            warning_display = True
+            cur_hr = None
         else:
             pred_bemp = total_num - pred_sbi
 
@@ -510,6 +548,9 @@ def update_graph(selectedLocation, map_graph):
             station_status = "Status: Active"
         else:
             station_status = "Status: Inactive"
+            warning_display = True
+            pred_sbi = '--'
+            pred_bemp = '--'
 
         #update weather
         wdata = bk.get_current_weather(int(selectedLocation))
@@ -525,7 +566,6 @@ def update_graph(selectedLocation, map_graph):
             img_div = html.Img(src=app.get_asset_url(new_path),width="100", height="100",style={"margin":"5%", "border-radius": "50%"}),
 
     if True:
-
         fig = go.Figure(
             data=[
                 # Plot of important locations on the map
@@ -548,7 +588,6 @@ def update_graph(selectedLocation, map_graph):
                 autosize=True,
                 margin=go.layout.Margin(l=5, r=5, t=5, b=5),
                 showlegend=False,
-                #height=450,
                 paper_bgcolor="#0A1612",
                 mapbox = dict(
                     accesstoken=mapbox_access_token,
@@ -593,8 +632,8 @@ def update_graph(selectedLocation, map_graph):
             ),
         )
 
-    return empty_num, bike_num, total_num, station_no, station_name, station_addr, station_status, pred_bemp, pred_sbi,w_uvi, w_rain, w_humd, w_pres, w_wdir, w_wdse, img_div,w_temp,fig
+    return empty_num, bike_num, total_num, station_no, station_name, station_addr, station_status, pred_bemp, pred_sbi,w_uvi, w_rain, w_humd, w_pres, w_wdir, w_wdse, img_div,w_temp,pred_sbi,cur_hr,warning_display,fig
 
 
 if __name__ == '__main__':
-    app.run_server(debug=True)
+    app.run_server(debug=True, threaded=True)

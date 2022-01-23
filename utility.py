@@ -128,3 +128,13 @@ def data_preprocess(df):
         print(exc_type, fname, exc_tb.tb_lineno)
 
     return df
+
+station_dict = {28: 20, 30: 22, 9: 24, 18: 26, 1: 28, 12: 30, 10: 32, 5: 34, 15: 36, 13: 38, 2: 40, 17: 42, 19: 44, 6: 46, 22: 48, 21: 50, 8: 52, 24: 54, 26: 56, 0: 58, 14: 60, 25: 62, 20: 64, 31: 66, 29: 68, 7: 70, 27: 72, 23: 74, 4: 80, 16: 86, 11: 94, 3: 180}
+def get_cno_by_tot(tot):
+    curr_cno = 28
+    for  key, value  in station_dict.items():
+        if value > tot:
+            break
+        else:
+            curr_cno = key
+    return curr_cno
