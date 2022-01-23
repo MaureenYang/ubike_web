@@ -34,7 +34,7 @@ app = dash.Dash(__name__,
 mapbox_access_token = "pk.eyJ1IjoibW9ycGhldXMyNyIsImEiOiJja2Zrd3J0dWMwb2pxMnlwY3g0Zmtza3ZuIn0.obFXuRnZeFgcHdzxq-Co4g"
 bk = backend()
 all_station_list = bk.get_all_station_list()
-
+server = app.server
 
 def getStationHoverInfo(stationlist):
     station_hover_info = []
