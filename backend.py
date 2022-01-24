@@ -7,6 +7,7 @@ from db_conn import ubike_db, weather_db
 from utility import data_preprocess, get_cno_by_tot
 import pickle
 import sklearn
+import pytz
 
 
 wstation_01_req_str ='https://opendata.cwb.gov.tw/api/v1/rest/datastore/O-A0003-001?Authorization=CWB-B74D517D-9F7C-44B9-90E9-4DF76361C725&format=JSON&stationId='
@@ -177,18 +178,19 @@ class backend():
         return station_list
 
     def get_12h_historical_data(self, sno, current_ts,hour_before):
-        ts = int(current_ts.timestamp())
-        h_data = self.p.get_historical_data(sno, ts + hour_before*(3600))
-        #fill data
-        cur_floor_ts = current_ts.replace(minute=0,second=0)
-        start_ts = cur_floor_ts - datetime.timedelta(hours=23)
-        #print(cur_floor_ts.strftime("%m-%d-%Y %H:%M:%S"))
-        print(h_data)
-        if isinstance(h_data, pd.Series) :
-            for h in pd.date_range(start=start_ts.strftime("%m-%d-%Y %H:%M:%S"),end=cur_floor_ts.strftime("%m-%d-%Y %H:%M:%S"), freq='H'):
-                if h_data[h_data.index == h].empty:
-                    h_data[h.to_pydatetime()] = 0
-            h_data = h_data.sort_index()
+        try:
+            ts = int(current_ts.timestamp())
+            h_data = self.p.get_historical_data(sno, ts + hour_before*(3600))
+            #fill data
+            cur_floor_ts = current_ts.replace(minute=0,second=0)
+            start_ts = cur_floor_ts - datetime.timedelta(hours=22)
+            if isinstance(h_data, pd.Series) :
+                h_dates = pd.date_range(start=start_ts.strftime("%m-%d-%Y %H:%M:%S %z"),end=cur_floor_ts.strftime("%m-%d-%Y %H:%M:%S %z"), freq='H')
+                h_data = h_data.reindex(h_dates,fill_value=0)
+
+        except Exception as e:
+            print('get_12h_historical_data:', e)
+            h_data = None
 
         return h_data
 

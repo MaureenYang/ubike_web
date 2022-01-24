@@ -3,7 +3,7 @@ import pandas as pd
 import datetime, time
 import sqlite3,json,requests
 import psycopg2
-
+import pytz
 ubike_db_file = 'E:/sqlite_db/crawler/ubike_db.db'
 weather_db_file = 'E:/sqlite_db/crawler/weather_db.db'
 
@@ -74,11 +74,10 @@ class ubike_db():
             self.dbclose()
 
             h_df = pd.DataFrame(h_data, columns=['sno','time','sbi'])
-            h_df['time'] = h_df['time'].apply(lambda x : datetime.datetime.fromtimestamp(int(x)))
+            h_df['time'] = h_df['time'].apply(lambda x : datetime.datetime.fromtimestamp(int(x)).astimezone(pytz.timezone('Asia/Taipei')))
             h_df = h_df.set_index(pd.to_datetime(h_df['time']))
             h_df = h_df.drop(columns=['time'])
             resample_h = h_df.sbi.resample('H').mean().interpolate(method='linear').astype(int)
-
         except Exception as e:
             print(e)
 
@@ -203,7 +202,7 @@ class weather_db():
             self.dbclose()
             #print(h_data)
             h_df = pd.DataFrame(h_data, columns=['stationId','time','ELEV','WDIR','WDSD','TEMP','HUMD','PRES','H_24R','H_UVI','Visb','Describe'])
-            h_df['time'] = h_df['time'].apply(lambda x : datetime.datetime.fromtimestamp(int(x)))
+            h_df['time'] = h_df['time'].apply(lambda x : datetime.datetime.fromtimestamp(int(x)).astimezone(pytz.timezone('Asia/Taipei')))
             h_df = h_df.set_index(pd.to_datetime(h_df['time']))
             h_df = h_df.drop(columns=['time'])
             h_df.index = h_df.index.floor('H')
