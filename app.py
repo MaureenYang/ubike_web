@@ -309,13 +309,12 @@ def update_histogram(selectedLocation,hr_slider, pred_sbi, cur_hr):
 
     idx = np.array([ 0,  1,  2,  3,  4,  5,  6,  7,  8,  9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23])
     if selectedLocation != None:
-        dt = datetime.now()
-        dt = us.localize(dt)
+        dt = datetime.now().astimezone(pytz.timezone('Asia/Taipei'))
         if isinstance(pred_sbi, int) == False and hr_slider == 1:
             h_df = bk.get_12h_historical_data(int(selectedLocation), dt,hr_slider-1)
         else:
             h_df = bk.get_12h_historical_data(int(selectedLocation), dt,hr_slider)
-        print(h_df)
+
         if isinstance(h_df, pd.Series) == False:
             xVal = np.array([ 0,  1,  2,  3,  4,  5,  6,  7,  8,  9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23])
             yVal = np.zeros(24)
@@ -529,7 +528,7 @@ def update_graph(selectedLocation, map_graph):
         station_name = station_info['sna']
         station_addr =  station_info['ar']
         try:
-            cur_time = us.localize(datetime.now())
+            cur_time =datetime.now().astimezone(pytz.timezone('Asia/Taipei'))
             cur_hr = cur_time.hour
             pred_sbi = bk.predict_sbi(int(selectedLocation),cur_time)
         except Exception as e:
