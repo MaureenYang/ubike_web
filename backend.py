@@ -141,7 +141,7 @@ class backend():
         #fill data
         cur_floor_ts = current_ts.replace(minute=0,second=0)
         start_ts = cur_floor_ts - datetime.timedelta(hours=23)
-        print(cur_floor_ts.strftime("%m-%d-%Y %H:%M:%S"))
+        #print(cur_floor_ts.strftime("%m-%d-%Y %H:%M:%S"))
         if isinstance(h_data, pd.Series) :
             for h in pd.date_range(start=start_ts.strftime("%m-%d-%Y %H:%M:%S"),end=cur_floor_ts.strftime("%m-%d-%Y %H:%M:%S"), freq='H'):
                 if h_data[h_data.index == h].empty:
@@ -187,7 +187,6 @@ class backend():
 
             df = pd.DataFrame([pred_x], columns=pred_col)
             df[set_col_name] = 1
-            print(df)
             #a = x.predict(df.values)[0][0]
             a = x.predict(df)
 

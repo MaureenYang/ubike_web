@@ -154,7 +154,7 @@ date_time_div = html.Div(
         html.Div(id='time-today'),
         dcc.Interval(
             id='interval-component',
-            interval=1*1000, # in milliseconds
+            interval=60*1000, # in milliseconds
             n_intervals=0
         )
     ]
@@ -247,7 +247,7 @@ app.layout = html.Div(
 def update_clock(intervals):
     dt_style = {'color':'white', 'size':'30px'}
     dt = datetime.now().astimezone(pytz.timezone('Asia/Taipei'))
-    return html.Span(dt.strftime("%H:%M:%S"),style=dt_style), html.Span(datetime.today().strftime('%B-%d-%Y %A'),style=dt_style)
+    return html.Span(dt.strftime("%H:%M %A"),style=dt_style), html.Span(datetime.today().strftime('%B-%d-%Y'),style=dt_style)
 
 
 # ------------------ Figure ------------------
