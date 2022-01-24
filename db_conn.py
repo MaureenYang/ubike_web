@@ -19,7 +19,7 @@ class ubike_db():
 
     def connect2db(self):
         if POSTGRESQL_DB:
-            self.conn = psycopg2.connect(database="dc6h7et50r2j0b", user="hpnfyuiogsmoac", password="a4463ccfee3a7e30666759a4d54e1bdd656e4f21553e693f72b69710abe781b1", host="ec2-52-204-72-14.compute-1.amazonaws.com", port="5432")
+            self.conn = psycopg2.connect(database="dfj829nc9fahlo", user="ydgvvdeoidtscb", password="010cc4328ed69687101a4025537bec4fa7d542f0e27a4f53bc575c0099f550a5", host="ec2-184-73-243-101.compute-1.amazonaws.com", port="5432")
         else:
             self.conn = sqlite3.connect(ubike_db_file, check_same_thread=False)
 
@@ -121,7 +121,7 @@ class weather_db():
 
     def connect2db(self):
         if POSTGRESQL_DB:
-            self.conn = psycopg2.connect(database="d3u983k86tsqp0", user="tllxvlxtjmfwmj", password="bc214f2e07b1eb845435d7c1dfda37314f26c885d21d22136cc58155566d862d", host="ec2-34-194-171-47.compute-1.amazonaws.com", port="5432")
+            self.conn = psycopg2.connect(database="daufm27q6hhk3b", user="eqfrjahxkbkufh", password="d31506edfe3049aa95d724206121305e63ae2514c9801871f42127fa754fd061", host="ec2-52-3-130-181.compute-1.amazonaws.com", port="5432")
         else:
             self.conn = sqlite3.connect(weather_db_file, check_same_thread=False)
 
