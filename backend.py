@@ -177,9 +177,11 @@ class backend():
             station_list = station_list + [udata[idx]]
         return station_list
 
-    def get_12h_historical_data(self, sno, current_ts,hour_before):
+    def get_12h_historical_data(self, sno, current_ts, hour_before):
         try:
+
             ts = int(current_ts.timestamp())
+            print(current_ts, ts)
             h_data = self.p.get_historical_data(sno, ts + hour_before*(3600))
             #fill data
             cur_floor_ts = current_ts.replace(minute=0,second=0)
