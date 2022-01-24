@@ -511,11 +511,12 @@ def update_graph(selectedLocation, map_graph):
     y_data = []
     for i in range(0,4):
         y_data = y_data + [graph_data]
-
+    start_time = time.time()
     station_list = bk.get_all_station_list()
     all_station_list = station_list
     hover_info_txt = getStationHoverInfo(station_list)
-
+    print('get all station time:',time.time() - start_time)
+    start_time = time.time()
     if selectedLocation:
         zoom = 15.0
         station_info= bk.get_station_info(selectedLocation)
@@ -527,6 +528,8 @@ def update_graph(selectedLocation, map_graph):
         station_no = station_no + station_info['sno']
         station_name = station_info['sna']
         station_addr =  station_info['ar']
+        print('get_station_info time:',time.time() - start_time)
+        start_time = time.time()
         try:
             cur_time =datetime.now().astimezone(pytz.timezone('Asia/Taipei'))
             cur_hr = cur_time.hour
@@ -566,6 +569,8 @@ def update_graph(selectedLocation, map_graph):
             new_path = bk.get_weather_icon_path(wdata['Describe'])
             img_div = html.Img(src=app.get_asset_url(new_path),width="100", height="100",style={"margin":"5%", "border-radius": "50%"}),
 
+        print('seleted time:',time.time() - start_time)
+        start_time = time.time()
     if True:
         fig = go.Figure(
             data=[
@@ -632,6 +637,8 @@ def update_graph(selectedLocation, map_graph):
                 ],
             ),
         )
+    print('plot graph time:',time.time() - start_time)
+    start_time = time.time()
 
     return empty_num, bike_num, total_num, station_no, station_name, station_addr, station_status, pred_bemp, pred_sbi,w_uvi, w_rain, w_humd, w_pres, w_wdir, w_wdse, img_div,w_temp,pred_sbi,cur_hr,warning_display,fig
 

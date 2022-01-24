@@ -3,7 +3,7 @@ import datetime, time
 import sys,json
 import pandas as pd
 import sqlite3
-from db_conn import ubike_db
+from db_conn import ubike_db, weather_db
 from utility import data_preprocess, get_cno_by_tot
 import pickle
 import sklearn
@@ -25,6 +25,7 @@ class backend():
 
     def __init__(self):
         self.p = ubike_db()
+        self.pw = weather_db()
 
     def get_key_value(self, src):
         new_element = {}
@@ -105,7 +106,47 @@ class backend():
             print('get_current_weather:',e)
 
         return new_w
+    def get_current_weather_from_db(self, sno):
+        new_w = None
+        w0 = 'w0'
+        w1 = 'w1'
+        station0 = ''
+        station1 = ''
+        try:
+            ws = mapping_table[mapping_table.index==sno]
+            ts = int(time.time())
+            station0 = ws['0'].values[0]
+            station1 = ws['1'].values[0]
+            #print('station0:', station0)
+            #print('station1:', station1)
+            if str(station0) == str(station1):
+                w0 = self.pw.get_historical_data(str(station0), ts)
+                w1 = w0
+            else:
+                w0 = self.pw.get_historical_data(str(station0), ts)
+                w1 = self.pw.get_historical_data(str(station1), ts)
+            #print('station1:', r1.text)
+            new_w = {}
+            new_w['UVI'] = w0['H_UVI']
+            #new_w['Visb'] = w0['VIS']
+            new_w['Describe'] = w0['Describe']
+            new_w['WDIR'] = w1['WDIR']
 
+            if str(station0) == str(station1):
+                new_w['WDSE'] = w1['WDSD']
+                new_w['H_24R'] = w1['24R']
+            else:
+                new_w['WDSE'] = w1['WDSD']
+                new_w['H_24R'] = w1['H_24R']
+
+            new_w['TEMP'] = w1['TEMP']
+            new_w['HUMD'] = w1['HUMD']
+            new_w['PRES'] = w1['PRES']
+
+        except Exception as e:
+            print('get_current_weather:',e)
+
+        return new_w
 
     def parse_ubike_json(self, json_txt,sno):
         json_obj = json.loads(json_txt)
@@ -142,6 +183,7 @@ class backend():
         cur_floor_ts = current_ts.replace(minute=0,second=0)
         start_ts = cur_floor_ts - datetime.timedelta(hours=23)
         #print(cur_floor_ts.strftime("%m-%d-%Y %H:%M:%S"))
+        print(h_data)
         if isinstance(h_data, pd.Series) :
             for h in pd.date_range(start=start_ts.strftime("%m-%d-%Y %H:%M:%S"),end=cur_floor_ts.strftime("%m-%d-%Y %H:%M:%S"), freq='H'):
                 if h_data[h_data.index == h].empty:
@@ -163,33 +205,50 @@ class backend():
 
     #need to fix
     def predict_sbi(self, sno, current_ts):
-        #print('predict sno:', sno)
+        wdata = None
         a = None
         pred_col = ['sbi', 'hrs_0', 'hrs_1', 'hrs_10', 'hrs_11', 'hrs_12', 'hrs_13','hrs_14', 'hrs_15', 'hrs_16', 'hrs_17', 'hrs_18', 'hrs_19', 'hrs_2','hrs_20', 'hrs_21', 'hrs_22', 'hrs_23', 'hrs_3', 'hrs_4', 'hrs_5','hrs_6', 'hrs_7', 'hrs_8', 'hrs_9', 'HUMD', 'H_UVI']
         try:
-            wdata = self.get_current_weather(sno)
+            start_time = time.time()
+            try:
+                wdata = self.get_current_weather(sno)
+                #wdata = self.get_current_weather_from_db(sno)
+                print('get_current_weather time:',time.time() - start_time)
+                start_time = time.time()
+            except Exception as e:
+                print('get_current_weather error:',e)
+                wdata = self.get_current_weather_from_db(sno)
 
             if wdata == None:
                 return None
 
+            #print('wdata:', wdata)
             bdata = self.get_12h_historical_data(sno, current_ts, 0)
+            print('get_12h_historical_data time:',time.time() - start_time)
+            start_time = time.time()
+            #print('bdata:', bdata)
             bdata_current = bdata[-2:]
             current_hr = current_ts.hour
             set_col_name = 'hrs_'+str(current_hr)
             pred_x = [bdata_current[-1:].values[0],0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,wdata['HUMD'],wdata['UVI']]
 
             station_info = self.get_station_info(str(sno).zfill(4))
+            print('get_station_info time:',time.time() - start_time)
+            start_time = time.time()
             tot = int(station_info['tot'])
             cno = get_cno_by_tot(tot)
-
+            print('get_cno_by_tot time:',time.time() - start_time)
+            start_time = time.time()
             with open('pickle/model_cno_'+str(cno).zfill(2)+'.pickle', 'rb') as f:
                 x = pickle.load(f)
-
+            print('pickle.load time:',time.time() - start_time)
+            start_time = time.time()
             df = pd.DataFrame([pred_x], columns=pred_col)
             df[set_col_name] = 1
             #a = x.predict(df.values)[0][0]
             a = x.predict(df)
-
+            print('predict time:',time.time() - start_time)
+            start_time = time.time()
             if a > tot:
                 a = tot
 
@@ -200,6 +259,7 @@ class backend():
 
         except Exception as e:
             print('predict_sbi:',e)
+
 
         return a
 
@@ -270,5 +330,8 @@ if __name__ == "__main__":
         except Exception as e:
             print(str(i) , ':', e)
     '''
-    #print(get_current_weather(405))
+    bk = backend()
+    for h in range(0, 1):
+        print('hour', h)
+        print(bk.predict_sbi(1, datetime.datetime.now() - datetime.timedelta(hours=h)))
     pass

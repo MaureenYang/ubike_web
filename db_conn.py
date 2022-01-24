@@ -72,6 +72,7 @@ class ubike_db():
                 for row in c.execute(cmd):
                     h_data = h_data + [row]
             self.dbclose()
+
             h_df = pd.DataFrame(h_data, columns=['sno','time','sbi'])
             h_df['time'] = h_df['time'].apply(lambda x : datetime.datetime.fromtimestamp(int(x)))
             h_df = h_df.set_index(pd.to_datetime(h_df['time']))
@@ -187,7 +188,7 @@ class weather_db():
             start_time = ts
 
             cmd = "SELECT * from hist_data WHERE time > {} and time < {};".format(str(ts - 86400), str(ts))
-            #cmd = "SELECT * from hist_data;"
+            cmd = "SELECT * from hist_data;"
 
             if POSTGRESQL_DB:
                 c.execute(cmd)
@@ -216,11 +217,17 @@ class weather_db():
         self.conn.close()
 
 if __name__ == "__main__":
-
-    p = weather_db()
-    p.connect2db()
-    ts = int(time.time())
-    h_df = p.get_historical_data("466910", ts)
-    print(h_df)
+    if False:
+        p = weather_db()
+        p.connect2db()
+        ts = int(time.time())
+        h_df = p.get_historical_data("466910", ts)
+        print(h_df)
+    else:
+        p = ubike_db()
+        p.connect2db()
+        ts = int(time.time())
+        h_df = p.get_historical_data(1, ts)
+        print(h_df)
 
     p.dbclose()
