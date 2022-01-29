@@ -107,6 +107,7 @@ class backend():
             print('get_current_weather:',e)
 
         return new_w
+
     def get_current_weather_from_db(self, sno):
         new_w = None
         w0 = 'w0'
@@ -121,31 +122,76 @@ class backend():
             #print('station0:', station0)
             #print('station1:', station1)
             if str(station0) == str(station1):
-                w0 = self.pw.get_historical_data(str(station0), ts)
+                w0 = self.pw.get_historical_data(str(station0), ts , True)
                 w1 = w0
             else:
-                w0 = self.pw.get_historical_data(str(station0), ts)
-                w1 = self.pw.get_historical_data(str(station1), ts)
+                w0 = self.pw.get_historical_data(str(station0), ts, True)
+                w1 = self.pw.get_historical_data(str(station1), ts, True)
             #print('station1:', r1.text)
             new_w = {}
-            new_w['UVI'] = w0['H_UVI']
-            #new_w['Visb'] = w0['VIS']
-            new_w['Describe'] = w0['Describe']
-            new_w['WDIR'] = w1['WDIR']
+            if False:
+                new_w['UVI'] = w0['H_UVI']
+                new_w['Describe'] = w0['Describe']
+                new_w['WDIR'] = w1['WDIR']
 
-            if str(station0) == str(station1):
-                new_w['WDSE'] = w1['WDSD']
-                new_w['H_24R'] = w1['24R']
-            else:
-                new_w['WDSE'] = w1['WDSD']
-                new_w['H_24R'] = w1['H_24R']
+                if str(station0) == str(station1):
+                    new_w['WDSE'] = w1['WDSD']
+                    new_w['H_24R'] = w1['24R']
+                else:
+                    new_w['WDSE'] = w1['WDSD']
+                    new_w['H_24R'] = w1['H_24R']
 
-            new_w['TEMP'] = w1['TEMP']
-            new_w['HUMD'] = w1['HUMD']
-            new_w['PRES'] = w1['PRES']
+                new_w['TEMP'] = w1['TEMP']
+                new_w['HUMD'] = w1['HUMD']
+                new_w['PRES'] = w1['PRES']
+            else: #float(w0['H_UVI'].values[0])
+                new_w['UVI'] = float(w0['H_UVI'].values[0])
+                new_w['Describe'] = w0['Describe'].values[0]
+                new_w['WDIR'] = float(w1['WDIR'].values[0])
+
+                if str(station0) == str(station1):
+                    new_w['WDSE'] = float(w1['WDSD'].values[0])
+                    new_w['H_24R'] = float(w1['24R'].values[0])
+                else:
+                    new_w['WDSE'] = float(w1['WDSD'].values[0])
+                    new_w['H_24R'] = float(w1['H_24R'].values[0])
+
+                new_w['TEMP'] = float(w1['TEMP'].values[0])
+                new_w['HUMD'] = float(w1['HUMD'].values[0])
+                new_w['PRES'] = float(w1['PRES'].values[0])
 
         except Exception as e:
-            print('get_current_weather:',e)
+            print('get_current_weather_from_db:',e)
+
+        return new_w
+
+    def get_current_weather_from_db_predict(self, sno):
+        new_w = None
+        w0 = 'w0'
+        w1 = 'w1'
+        station0 = ''
+        station1 = ''
+        try:
+            ws = mapping_table[mapping_table.index==sno]
+            ts = int(time.time())
+            station0 = ws['0'].values[0]
+            station1 = ws['1'].values[0]
+            #print('station0:', station0)
+            #print('station1:', station1)
+            if str(station0) == str(station1):
+                w0 = self.pw.get_historical_data(str(station0), ts , False)
+                w1 = w0
+            else:
+                w0 = self.pw.get_historical_data(str(station0), ts, False)
+                w1 = self.pw.get_historical_data(str(station1), ts, False)
+            #print('station1:', r1.text)
+
+            new_w = {}
+            new_w['UVI'] = float(w0['H_UVI'].values[0])
+            new_w['HUMD'] = float(w1['HUMD'].values[0])
+
+        except Exception as e:
+            print('get_current_weather_from_db_predict:',e)
 
         return new_w
 
@@ -216,7 +262,7 @@ class backend():
             start_time = time.time()
             try:
                 #wdata = self.get_current_weather(sno)
-                wdata = self.get_current_weather_from_db(sno)
+                wdata = self.get_current_weather_from_db_predict(sno)
                 print('get_current_weather time:',time.time() - start_time)
                 start_time = time.time()
             except Exception as e:
@@ -226,14 +272,13 @@ class backend():
             if wdata == None:
                 return None
 
-            #print('wdata:', wdata)
             bdata = self.get_12h_historical_data(sno, current_ts, 0)
             print('get_12h_historical_data time:',time.time() - start_time)
             start_time = time.time()
             #print('bdata:', bdata)
             bdata_current = bdata[-2:]
             current_hr = current_ts.hour
-            set_col_name = 'hrs_'+str(current_hr)
+            set_col_name = 'hrs_' + str(current_hr)
             pred_x = [bdata_current[-1:].values[0],0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,wdata['HUMD'],wdata['UVI']]
 
             station_info = self.get_station_info(str(sno).zfill(4))

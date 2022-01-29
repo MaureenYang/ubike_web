@@ -1,7 +1,7 @@
 import os,sys
 import pandas as pd
 import datetime, time
-import sqlite3,json,requests
+import sqlite3,json,requests, re
 import psycopg2
 import pytz
 ubike_db_file = 'E:/sqlite_db/crawler/ubike_db.db'
@@ -53,7 +53,7 @@ class ubike_db():
 
             h_data = []
             if POSTGRESQL_DB:
-                cmd = "CREATE TEMP VIEW hist_data as SELECT (time, sbi) FROM ubike_data WHERE sno = {};".format(sno)
+                cmd = "CREATE TEMP VIEW hist_data as SELECT * FROM ubike_data WHERE sno = {};".format(sno)
             else:
                 cmd = "CREATE TEMP VIEW hist_data as SELECT * FROM ubike_data WHERE sno == {};".format(sno)
             c = self.conn.cursor()
@@ -61,24 +61,27 @@ class ubike_db():
             self.conn.commit()
             start_time = ts
             cmd = "SELECT (time, sbi) from hist_data WHERE time > {} and time < {};".format(str(ts - 86400), str(ts))
-            print(cmd)
+            #print(cmd)
             #cmd = "SELECT * from hist_data;"
             c = self.conn.cursor()
             if POSTGRESQL_DB:
                 c.execute(cmd)
                 rows = c.fetchall()
                 for row in rows:
-                    h_data = h_data + [row]
+                    new_t = re.findall("\((.*?)\)", row[0])
+                    row_t = re.split(r",| ", new_t[0])
+                    h_data = h_data + [row_t]
             else:
                 for row in c.execute(cmd):
                     h_data = h_data + [row]
             self.dbclose()
-            print(h_data)
+            #print(h_data)
             #h_df = pd.DataFrame(h_data, columns=['sno','time','sbi'])
             h_df = pd.DataFrame(h_data, columns=['time','sbi'])
             h_df['time'] = h_df['time'].apply(lambda x : datetime.datetime.fromtimestamp(int(x)).astimezone(pytz.timezone('Asia/Taipei')))
             h_df = h_df.set_index(pd.to_datetime(h_df['time']))
             h_df = h_df.drop(columns=['time'])
+            h_df.sbi = h_df.sbi.astype(int)
             resample_h = h_df.sbi.resample('H').mean().interpolate(method='linear').astype(int)
         except Exception as e:
             print(e)
@@ -108,7 +111,7 @@ class ubike_db():
             df = pd.DataFrame(h_data, columns=['sno', 'sname', 'lat', 'lng','tot','sarea','sar'])
             df = df.set_index(df.sno)
         except Exception as e:
-            print(e)
+            print('[bike] get_historical_data error:', e)
 
         return df
 
@@ -167,7 +170,7 @@ class weather_db():
         self.conn.commit()
         self.dbclose()
 
-    def get_historical_data(self, sno, ts):
+    def get_historical_data(self, sno, ts ,full):
 
         self.connect2db()
         h_df = None
@@ -179,24 +182,28 @@ class weather_db():
 
             h_data = []
             if POSTGRESQL_DB:
-                cmd = "CREATE TEMP VIEW hist_data as SELECT (time,elev,wdir,wdsd,temp,humd,pres,h24r, uvi,vis, weather) FROM weather_data WHERE stationid = \'{}\';".format(sno)
+                cmd = "CREATE TEMP VIEW hist_data as SELECT * FROM weather_data WHERE stationid = \'{}\';".format(sno)
             else:
                 cmd = "CREATE TEMP VIEW hist_data as SELECT * FROM weather_data WHERE stationId == \'{}\';".format(sno)
-            #print(cmd)
+            print(cmd)
             c = self.conn.cursor()
             c.execute(cmd)
             self.conn.commit()
 
             start_time = ts
-
-            cmd = "SELECT * from hist_data WHERE time > {} and time < {};".format(str(ts - 86400), str(ts))
-            cmd = "SELECT * from hist_data;"
-
+            if full:
+                cmd = "SELECT (time,elev,wdir,wdsd,temp,humd,pres,h24r,uvi,vis,weather) from hist_data WHERE time > {} and time < {};".format(str(ts - 86400), str(ts))
+            else:
+                cmd = "SELECT (time,humd, uvi) from hist_data WHERE time > {} and time < {};".format(str(ts - 86400), str(ts))
+            #cmd = "SELECT * from hist_data;"
+            #print(cmd)
             if POSTGRESQL_DB:
                 c.execute(cmd)
                 rows = c.fetchall()
                 for row in rows:
-                    h_data = h_data + [row]
+                    new_t = re.findall("\((.*?)\)", row[0])
+                    row_t = re.split(r",| ", new_t[0])
+                    h_data = h_data + [row_t]
             else:
                 c = self.conn.cursor()
                 for row in c.execute(cmd):
@@ -205,14 +212,19 @@ class weather_db():
             self.dbclose()
             #print(h_data)
             #h_df = pd.DataFrame(h_data, columns=['stationId','time','ELEV','WDIR','WDSD','TEMP','HUMD','PRES','H_24R','H_UVI','Visb','Describe'])
-            h_df = pd.DataFrame(h_data, columns=['time','ELEV','WDIR','WDSD','TEMP','HUMD','PRES','H_24R','H_UVI','Visb','Describe'])
+            if full:
+                h_df = pd.DataFrame(h_data, columns=['time','ELEV','WDIR','WDSD','TEMP','HUMD','PRES','H_24R','H_UVI','Visb','Describe'])
+            else:
+                h_df = pd.DataFrame(h_data, columns=['time','HUMD','H_UVI'])
+
             h_df['time'] = h_df['time'].apply(lambda x : datetime.datetime.fromtimestamp(int(x)).astimezone(pytz.timezone('Asia/Taipei')))
             h_df = h_df.set_index(pd.to_datetime(h_df['time']))
             h_df = h_df.drop(columns=['time'])
             h_df.index = h_df.index.floor('H')
-
+            #print(h_df)
         except Exception as e:
-            print(e)
+            print('[weather] get_historical_data error:', e)
+
 
         return h_df
 
@@ -220,12 +232,11 @@ class weather_db():
         self.conn.close()
 
 if __name__ == "__main__":
-    if False:
+    if True:
         p = weather_db()
         p.connect2db()
         ts = int(time.time())
-        h_df = p.get_historical_data("466910", ts)
-        print(h_df)
+        h_df = p.get_historical_data("466910", ts, False)
     else:
         p = ubike_db()
         p.connect2db()
