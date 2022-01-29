@@ -210,7 +210,7 @@ class weather_db():
                     h_data = h_data + [row]
 
             self.dbclose()
-            #print(h_data)
+            print(h_data)
             #h_df = pd.DataFrame(h_data, columns=['stationId','time','ELEV','WDIR','WDSD','TEMP','HUMD','PRES','H_24R','H_UVI','Visb','Describe'])
             if full:
                 h_df = pd.DataFrame(h_data, columns=['time','ELEV','WDIR','WDSD','TEMP','HUMD','PRES','H_24R','H_UVI','Visb','Describe'])

@@ -144,6 +144,7 @@ class backend():
                 new_w['TEMP'] = w1['TEMP']
                 new_w['HUMD'] = w1['HUMD']
                 new_w['PRES'] = w1['PRES']
+
             else: #float(w0['H_UVI'].values[0])
                 new_w['UVI'] = float(w0['H_UVI'].values[0])
                 new_w['Describe'] = w0['Describe'].values[0]
@@ -179,16 +180,30 @@ class backend():
             #print('station0:', station0)
             #print('station1:', station1)
             if str(station0) == str(station1):
-                w0 = self.pw.get_historical_data(str(station0), ts , False)
+                w0 = self.pw.get_historical_data(str(station0), ts, False)
                 w1 = w0
             else:
                 w0 = self.pw.get_historical_data(str(station0), ts, False)
                 w1 = self.pw.get_historical_data(str(station1), ts, False)
             #print('station1:', r1.text)
-
+            if w0.empty and not w1.empty:
+                w0 = w1
+            if w1.empty and not w0.empty:
+                w1 = w0       
+            print(w0)
+            print(w1)
             new_w = {}
-            new_w['UVI'] = float(w0['H_UVI'].values[0])
-            new_w['HUMD'] = float(w1['HUMD'].values[0])
+            try:
+                new_w['UVI'] = float(w0['H_UVI'].values[0])
+            except Exception as e:
+                print(e,'UVI', w0['H_UVI'].values[0])
+                new_w['UVI'] = 0
+
+            try:
+                new_w['HUMD'] = float(w1['HUMD'].values[0])
+            except Exception as e:
+                print(e,'HUMD', w0['HUMD'].values[0])
+                new_w['HUMD'] = 0
 
         except Exception as e:
             print('get_current_weather_from_db_predict:',e)
