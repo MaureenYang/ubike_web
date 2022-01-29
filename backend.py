@@ -215,8 +215,8 @@ class backend():
         try:
             start_time = time.time()
             try:
-                wdata = self.get_current_weather(sno)
-                #wdata = self.get_current_weather_from_db(sno)
+                #wdata = self.get_current_weather(sno)
+                wdata = self.get_current_weather_from_db(sno)
                 print('get_current_weather time:',time.time() - start_time)
                 start_time = time.time()
             except Exception as e:

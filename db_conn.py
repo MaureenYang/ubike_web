@@ -53,14 +53,14 @@ class ubike_db():
 
             h_data = []
             if POSTGRESQL_DB:
-                cmd = "CREATE TEMP VIEW hist_data as SELECT * FROM ubike_data WHERE sno = {};".format(sno)
+                cmd = "CREATE TEMP VIEW hist_data as SELECT (time, sbi) FROM ubike_data WHERE sno = {};".format(sno)
             else:
                 cmd = "CREATE TEMP VIEW hist_data as SELECT * FROM ubike_data WHERE sno == {};".format(sno)
             c = self.conn.cursor()
             c.execute(cmd)
             self.conn.commit()
             start_time = ts
-            cmd = "SELECT * from hist_data WHERE time > {} and time < {};".format(str(ts - 86400), str(ts))
+            cmd = "SELECT (time, sbi) from hist_data WHERE time > {} and time < {};".format(str(ts - 86400), str(ts))
             print(cmd)
             #cmd = "SELECT * from hist_data;"
             c = self.conn.cursor()
@@ -74,7 +74,8 @@ class ubike_db():
                     h_data = h_data + [row]
             self.dbclose()
             print(h_data)
-            h_df = pd.DataFrame(h_data, columns=['sno','time','sbi'])
+            #h_df = pd.DataFrame(h_data, columns=['sno','time','sbi'])
+            h_df = pd.DataFrame(h_data, columns=['time','sbi'])
             h_df['time'] = h_df['time'].apply(lambda x : datetime.datetime.fromtimestamp(int(x)).astimezone(pytz.timezone('Asia/Taipei')))
             h_df = h_df.set_index(pd.to_datetime(h_df['time']))
             h_df = h_df.drop(columns=['time'])
@@ -89,7 +90,7 @@ class ubike_db():
         try:
             h_data = []
             self.connect2db()
-            cmd = "SELECT * from station_info "
+            cmd = "SELECT (sno, sname, lat, lng,tot,sarea,sar) from station_info "
             print(cmd)
 
             c = self.conn.cursor()
@@ -103,7 +104,8 @@ class ubike_db():
                     h_data = h_data + [row]
 
             self.dbclose()
-            df = pd.DataFrame(h_data, columns=['sno', 'sname', 'lat', 'lng','tot','sarea','sar','snen','sareaen','saren'])
+            #df = pd.DataFrame(h_data, columns=['sno', 'sname', 'lat', 'lng','tot','sarea','sar','snen','sareaen','saren'])
+            df = pd.DataFrame(h_data, columns=['sno', 'sname', 'lat', 'lng','tot','sarea','sar'])
             df = df.set_index(df.sno)
         except Exception as e:
             print(e)
@@ -177,7 +179,7 @@ class weather_db():
 
             h_data = []
             if POSTGRESQL_DB:
-                cmd = "CREATE TEMP VIEW hist_data as SELECT * FROM weather_data WHERE stationid = \'{}\';".format(sno)
+                cmd = "CREATE TEMP VIEW hist_data as SELECT (time,elev,wdir,wdsd,temp,humd,pres,h24r, uvi,vis, weather) FROM weather_data WHERE stationid = \'{}\';".format(sno)
             else:
                 cmd = "CREATE TEMP VIEW hist_data as SELECT * FROM weather_data WHERE stationId == \'{}\';".format(sno)
             #print(cmd)
@@ -202,7 +204,8 @@ class weather_db():
 
             self.dbclose()
             #print(h_data)
-            h_df = pd.DataFrame(h_data, columns=['stationId','time','ELEV','WDIR','WDSD','TEMP','HUMD','PRES','H_24R','H_UVI','Visb','Describe'])
+            #h_df = pd.DataFrame(h_data, columns=['stationId','time','ELEV','WDIR','WDSD','TEMP','HUMD','PRES','H_24R','H_UVI','Visb','Describe'])
+            h_df = pd.DataFrame(h_data, columns=['time','ELEV','WDIR','WDSD','TEMP','HUMD','PRES','H_24R','H_UVI','Visb','Describe'])
             h_df['time'] = h_df['time'].apply(lambda x : datetime.datetime.fromtimestamp(int(x)).astimezone(pytz.timezone('Asia/Taipei')))
             h_df = h_df.set_index(pd.to_datetime(h_df['time']))
             h_df = h_df.drop(columns=['time'])
