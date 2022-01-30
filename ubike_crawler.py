@@ -13,6 +13,9 @@ if True:
         try:
             r = requests.get('https://tcgbusfs.blob.core.windows.net/blobyoubike/YouBikeTP.json')
             json_obj = json.loads(r.text)
+            with open('YouBikeTP.json', 'w') as f:
+                json.dump(json_obj, f)
+                
             udata = json_obj['retVal']
             for idx in udata:
                 try:
@@ -22,6 +25,7 @@ if True:
                     dt = datetime.datetime.strptime(udata[idx]['mday'], "%Y%m%d%H%M%S").astimezone(pytz.timezone('Asia/Taipei'))
                     sdata['time'] = int(dt.timestamp())
                     p.insert_ubike_data(sdata)
+
                 except Exception as e:
                     print(e)
 

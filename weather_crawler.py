@@ -17,7 +17,7 @@ if True:
 
     ws0_list = ["466910" ,"466920","466930"]
     ws1_list = ["C0A980","C0A9E0","C0A9F0","C0AH40","C0AH70","C0AI40","C0AC40","C0AC70","C0AC80","C0A9C0"]
-
+    wfile = {}
     if True:
         try:
             for ws in ws0_list:
@@ -33,6 +33,7 @@ if True:
                             kv = bk.get_key_value(k)
                             d.update(kv)
                         d.pop('weatherElement')
+                        wfile[ws] = d
                         d['time'] = d['time']['obsTime']
                         dt = datetime.datetime.strptime(d['time'], "%Y-%m-%d %H:%M:%S").astimezone(pytz.timezone('Asia/Taipei'))
                         d['time'] = int(dt.timestamp())
@@ -53,12 +54,16 @@ if True:
                             kv = bk.get_key_value(k)
                             d.update(kv)
                         d.pop('weatherElement')
+                        wfile[ws] = d
                         d['time'] = d['time']['obsTime']
                         dt = datetime.datetime.strptime(d['time'], "%Y-%m-%d %H:%M:%S").astimezone(pytz.timezone('Asia/Taipei'))
                         d['time'] = int(dt.timestamp())
                         p.insert_weather1_data(d)
                 except Exception as e:
                     print(e)
+
+                with open('Weather.json', 'w') as f:
+                    json.dump(wfile, f)
 
         except TimeoutError as e:
             # Maybe set up for a retry, or continue in a retry loop

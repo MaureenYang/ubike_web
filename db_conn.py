@@ -60,7 +60,7 @@ class ubike_db():
             c.execute(cmd)
             self.conn.commit()
             start_time = ts
-            cmd = "SELECT (time, sbi) from hist_data WHERE time > {} and time < {};".format(str(ts - 86400), str(ts))
+            cmd = "SELECT (time, sbi) from hist_data WHERE time > {} and time < {};".format(str(ts - 86400*2), str(ts))
             #print(cmd)
             #cmd = "SELECT * from hist_data;"
             c = self.conn.cursor()
@@ -75,7 +75,7 @@ class ubike_db():
                 for row in c.execute(cmd):
                     h_data = h_data + [row]
             self.dbclose()
-            #print(h_data)
+
             #h_df = pd.DataFrame(h_data, columns=['sno','time','sbi'])
             h_df = pd.DataFrame(h_data, columns=['time','sbi'])
             h_df['time'] = h_df['time'].apply(lambda x : datetime.datetime.fromtimestamp(int(x)).astimezone(pytz.timezone('Asia/Taipei')))
@@ -89,11 +89,12 @@ class ubike_db():
         return resample_h
 
     def get_station_info(self):
+        print('get_station_info enter')
         df = pd.DataFrame()
         try:
             h_data = []
             self.connect2db()
-            cmd = "SELECT (sno, sname, lat, lng,tot,sarea,sar) from station_info "
+            cmd = "SELECT (sno, sname, lat, lng,tot,sarea, sar) from station_info "
             print(cmd)
 
             c = self.conn.cursor()
@@ -101,7 +102,9 @@ class ubike_db():
                 c.execute(cmd)
                 rows = c.fetchall()
                 for row in rows:
-                    h_data = h_data + [row]
+                    new_t = re.findall("\((.*?)\)", row[0])
+                    row_t = re.split(r",| ", new_t[0])
+                    h_data = h_data + [row_t]
             else:
                 for row in c.execute(cmd):
                     h_data = h_data + [row]
