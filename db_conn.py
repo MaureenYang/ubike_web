@@ -89,7 +89,6 @@ class ubike_db():
         return resample_h
 
     def get_station_info(self):
-        print('get_station_info enter')
         df = pd.DataFrame()
         try:
             h_data = []
@@ -117,6 +116,16 @@ class ubike_db():
             print('[bike] get_historical_data error:', e)
 
         return df
+
+    def delete_data_before_time(self, ts):
+        self.connect2db()
+        cmd = "DELETE FROM ubike_data WHERE time < {}".format(str(ts))
+        print(cmd)
+        c = self.conn.cursor()
+        c.execute(cmd)
+        self.conn.commit()
+        self.dbclose()
+
 
     def dbclose(self):
         self.conn.close()
@@ -178,7 +187,7 @@ class weather_db():
         self.connect2db()
         h_df = None
         try:
-            if ts%3600:
+            if ts % 3600:
                 ts = int(ts/3600 + 1)*3600
             else:
                 ts = int(ts/3600)*3600
@@ -228,8 +237,17 @@ class weather_db():
         except Exception as e:
             print('[weather] get_historical_data error:', e)
 
-
         return h_df
+
+
+    def delete_data_before_time(self, ts):
+        self.connect2db()
+        cmd = "DELETE FROM weather_data WHERE time < {}".format(str(ts))
+        print(cmd)
+        c = self.conn.cursor()
+        c.execute(cmd)
+        self.conn.commit()
+        self.dbclose()
 
     def dbclose(self):
         self.conn.close()

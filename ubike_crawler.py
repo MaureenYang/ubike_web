@@ -15,7 +15,7 @@ if True:
             json_obj = json.loads(r.text)
             with open('YouBikeTP.json', 'w') as f:
                 json.dump(json_obj, f)
-                
+
             udata = json_obj['retVal']
             for idx in udata:
                 try:
@@ -25,6 +25,7 @@ if True:
                     dt = datetime.datetime.strptime(udata[idx]['mday'], "%Y%m%d%H%M%S").astimezone(pytz.timezone('Asia/Taipei'))
                     sdata['time'] = int(dt.timestamp())
                     p.insert_ubike_data(sdata)
+                    p.delete_data_before_time(ts - 86400*7)
 
                 except Exception as e:
                     print(e)
