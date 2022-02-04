@@ -19,7 +19,8 @@ class ubike_db():
 
     def connect2db(self):
         if POSTGRESQL_DB:
-            self.conn = psycopg2.connect(database="dfj829nc9fahlo", user="ydgvvdeoidtscb", password="010cc4328ed69687101a4025537bec4fa7d542f0e27a4f53bc575c0099f550a5", host="ec2-184-73-243-101.compute-1.amazonaws.com", port="5432")
+            #self.conn = psycopg2.connect(database="dfj829nc9fahlo", user="ydgvvdeoidtscb", password="010cc4328ed69687101a4025537bec4fa7d542f0e27a4f53bc575c0099f550a5", host="ec2-184-73-243-101.compute-1.amazonaws.com", port="5432")
+            self.conn = psycopg2.connect(database="dctjd39bga3hdu", user="mldxalmpalbstb", password="a5296cd9678094222b8915f5831f0200fc489088ccb90a47a82b05a798eab13f", host="ec2-18-235-114-62.compute-1.amazonaws.com", port="5432")
         else:
             self.conn = sqlite3.connect(ubike_db_file, check_same_thread=False)
 
