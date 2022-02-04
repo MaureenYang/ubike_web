@@ -79,8 +79,8 @@ class ubike_db():
 
             #h_df = pd.DataFrame(h_data, columns=['sno','time','sbi'])
             h_df = pd.DataFrame(h_data, columns=['time','sbi'])
-            #h_df['time'] = h_df['time'].apply(lambda x : datetime.datetime.fromtimestamp(int(x)).astimezone(pytz.timezone('Asia/Taipei')))
-            h_df['time'] = h_df['time'].apply(lambda x : datetime.datetime.fromtimestamp(int(x)))
+            h_df['time'] = h_df['time'].apply(lambda x : datetime.datetime.fromtimestamp(int(x)).astimezone(pytz.timezone('Asia/Taipei')))
+            #h_df['time'] = h_df['time'].apply(lambda x : datetime.datetime.fromtimestamp(int(x)))
             print(h_df)
             h_df = h_df.set_index(pd.to_datetime(h_df['time']))
             h_df = h_df.drop(columns=['time'])
