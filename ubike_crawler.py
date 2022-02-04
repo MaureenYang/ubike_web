@@ -22,15 +22,16 @@ if True:
                     sdata = {}
                     sdata['sno'] = int(udata[idx]['sno'])
                     sdata['sbi'] = int(udata[idx]['sbi'])
-                    dt = datetime.datetime.strptime(udata[idx]['mday'], "%Y%m%d%H%M%S").astimezone(pytz.timezone('Asia/Taipei'))
+                    dt = datetime.datetime.strptime(udata[idx]['mday'], "%Y%m%d%H%M%S")#.astimezone(pytz.timezone('Asia/Taipei'))
                     sdata['time'] = int(dt.timestamp())
+                    print(sdata['time'])
                     ts = int(dt.timestamp())
-                    p.insert_ubike_data(sdata)
-                    p.delete_data_before_time(ts - 86400*7)
+                    #p.insert_ubike_data(sdata)
 
                 except Exception as e:
                     print(e)
 
+            p.delete_data_before_time(ts - 86400*7)
 
         except TimeoutError as e:
             print("[Youbike Timeouterror]")

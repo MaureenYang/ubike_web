@@ -35,11 +35,10 @@ if True:
                         d.pop('weatherElement')
                         wfile[ws] = d
                         d['time'] = d['time']['obsTime']
-                        dt = datetime.datetime.strptime(d['time'], "%Y-%m-%d %H:%M:%S").astimezone(pytz.timezone('Asia/Taipei'))
+                        dt = datetime.datetime.strptime(d['time'], "%Y-%m-%d %H:%M:%S")#.astimezone(pytz.timezone('Asia/Taipei'))
                         d['time'] = int(dt.timestamp())
                         ts = int(dt.timestamp())
                         p.insert_weather0_data(d)
-                        p.delete_data_before_time(ts - 86400*7)
                 except Exception as e:
                         print(e)
 
@@ -58,17 +57,17 @@ if True:
                         d.pop('weatherElement')
                         wfile[ws] = d
                         d['time'] = d['time']['obsTime']
-                        dt = datetime.datetime.strptime(d['time'], "%Y-%m-%d %H:%M:%S").astimezone(pytz.timezone('Asia/Taipei'))
+                        dt = datetime.datetime.strptime(d['time'], "%Y-%m-%d %H:%M:%S")#.astimezone(pytz.timezone('Asia/Taipei'))
                         d['time'] = int(dt.timestamp())
                         ts = int(dt.timestamp())
                         p.insert_weather1_data(d)
-                        p.delete_data_before_time(ts - 86400*7)
 
                 except Exception as e:
                     print(e)
 
                 with open('Weather.json', 'w') as f:
                     json.dump(wfile, f)
+            p.delete_data_before_time(ts - 86400*7)
 
         except TimeoutError as e:
             # Maybe set up for a retry, or continue in a retry loop
