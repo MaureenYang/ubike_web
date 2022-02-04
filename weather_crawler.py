@@ -35,7 +35,9 @@ if True:
                         d.pop('weatherElement')
                         wfile[ws] = d
                         d['time'] = d['time']['obsTime']
-                        dt = datetime.datetime.strptime(d['time'], "%Y-%m-%d %H:%M:%S")#.astimezone(pytz.timezone('Asia/Taipei'))
+                        tw_tz = pytz.timezone('Asia/Taipei')
+                        dt = datetime.datetime.strptime(d['time'], "%Y-%m-%d %H:%M:%S")
+                        dt = tw_tz.localize(dt)
                         d['time'] = int(dt.timestamp())
                         ts = int(dt.timestamp())
                         p.insert_weather0_data(d)
@@ -57,7 +59,9 @@ if True:
                         d.pop('weatherElement')
                         wfile[ws] = d
                         d['time'] = d['time']['obsTime']
-                        dt = datetime.datetime.strptime(d['time'], "%Y-%m-%d %H:%M:%S")#.astimezone(pytz.timezone('Asia/Taipei'))
+                        tw_tz = pytz.timezone('Asia/Taipei')
+                        dt = datetime.datetime.strptime(d['time'], "%Y-%m-%d %H:%M:%S")
+                        dt = tw_tz.localize(dt)
                         d['time'] = int(dt.timestamp())
                         ts = int(dt.timestamp())
                         p.insert_weather1_data(d)
