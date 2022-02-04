@@ -413,18 +413,21 @@ class backend():
     def get_12h_historical_data(self, sno, current_ts, hour_before):
         try:
             ts = int(current_ts.timestamp())
-
-            h_data = self.p.get_historical_data(sno, ts + hour_before*(3600))
+            print(ts)
+            h_data = self.p.get_historical_data(sno, ts)# + hour_before*(3600))
+            print(h_data)
             #fill data
             cur_floor_ts = current_ts.replace(minute=0,second=0)
             start_ts = cur_floor_ts - datetime.timedelta(hours=(23+24))
+            print(start_ts, cur_floor_ts)
             if isinstance(h_data, pd.Series) :
                 h_dates = pd.date_range(start=start_ts.strftime("%m-%d-%Y %H:%M:%S %z"),end=cur_floor_ts.strftime("%m-%d-%Y %H:%M:%S %z"), freq='H')
                 h_data = h_data.reindex(h_dates,fill_value=0)
+
         except Exception as e:
             print('get_12h_historical_data:', e)
             h_data = None
-
+        print(h_data)
         return h_data
 
     def compose_predict_data(self, bdata, wdata):

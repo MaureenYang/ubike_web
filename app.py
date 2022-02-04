@@ -650,6 +650,7 @@ def update_prediction(station_info, wdata):
         try:
             cur_time = datetime.now().astimezone(pytz.timezone('Asia/Taipei'))
             cur_hr = cur_time.hour
+            print(cur_time)
             sbi_series = bk.predict_sbi_data(station_info,cur_time, wdata)
             pred_sbi = sbi_series[-1:].values[0]
 

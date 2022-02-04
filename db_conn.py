@@ -61,7 +61,7 @@ class ubike_db():
             self.conn.commit()
             start_time = ts
             cmd = "SELECT (time, sbi) from hist_data WHERE time > {} and time < {};".format(str(ts - 86400*2), str(ts))
-            #print(cmd)
+            print(cmd)
             #cmd = "SELECT * from hist_data;"
             c = self.conn.cursor()
             if POSTGRESQL_DB:
@@ -78,7 +78,9 @@ class ubike_db():
 
             #h_df = pd.DataFrame(h_data, columns=['sno','time','sbi'])
             h_df = pd.DataFrame(h_data, columns=['time','sbi'])
-            h_df['time'] = h_df['time'].apply(lambda x : datetime.datetime.fromtimestamp(int(x)).astimezone(pytz.timezone('Asia/Taipei')))
+            #h_df['time'] = h_df['time'].apply(lambda x : datetime.datetime.fromtimestamp(int(x)).astimezone(pytz.timezone('Asia/Taipei')))
+            h_df['time'] = h_df['time'].apply(lambda x : datetime.datetime.fromtimestamp(int(x)))
+            print(h_df)
             h_df = h_df.set_index(pd.to_datetime(h_df['time']))
             h_df = h_df.drop(columns=['time'])
             h_df.sbi = h_df.sbi.astype(int)

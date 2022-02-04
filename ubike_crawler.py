@@ -24,6 +24,7 @@ if True:
                     sdata['sbi'] = int(udata[idx]['sbi'])
                     dt = datetime.datetime.strptime(udata[idx]['mday'], "%Y%m%d%H%M%S").astimezone(pytz.timezone('Asia/Taipei'))
                     sdata['time'] = int(dt.timestamp())
+                    ts = int(dt.timestamp())
                     p.insert_ubike_data(sdata)
                     p.delete_data_before_time(ts - 86400*7)
 
