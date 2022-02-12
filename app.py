@@ -312,13 +312,14 @@ def get_selection(month, day, selection):
     ],
 )
 def update_histogram(selectedLocation, hr_slider, sbi_series, cur_hr):
-
+    print('current hour:', cur_hr)
+    print('slider:',hr_slider)
     idx = np.array([ 0,  1,  2,  3,  4,  5,  6,  7,  8,  9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23])
     if selectedLocation != None and sbi_series:
         dt = datetime.now().astimezone(pytz.timezone('Asia/Taipei'))
         a_list = collections.deque(idx)
-        a_list.rotate(22-cur_hr)
-        h_df = sbi_series[(24+hr_slider) : (48+hr_slider)]
+        a_list.rotate(23 - cur_hr - hr_slider)
+        h_df = sbi_series[(24 + hr_slider) : (48 + hr_slider)]
         xVal = np.array(list(a_list))
         yVal = np.array(list(h_df))
 
